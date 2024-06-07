@@ -17,8 +17,7 @@
             <img src="/demo/images/landing/f3.png" alt="" class="thirty responsive" />
         </div>
     </div>
-
-    <div></div>
+<div></div>
 </template>
 
 <script setup>
