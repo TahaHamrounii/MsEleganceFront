@@ -18,7 +18,7 @@ onBeforeUnmount(() => {
 });
 
 const logoUrl = computed(() => {
-    return `/layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
+    return `/layout/images/logo.png`;
 });
 
 const onTopBarMenuButton = () => {
@@ -61,10 +61,9 @@ const isOutsideClicked = (event) => {
 </script>
 
 <template>
-    <div class="layout-topbar">
-        <router-link to="/" class="layout-topbar-logo">
-            <img :src="logoUrl" alt="logo" />
-            <span>SAKAI</span>
+    <div class="layout-topbar h-16" >
+        <router-link to="/">
+            <img :src="logoUrl" alt="logo" class="imagew"/>
         </router-link>
 
         <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
@@ -75,21 +74,39 @@ const isOutsideClicked = (event) => {
             <i class="pi pi-ellipsis-v"></i>
         </button>
 
-        <div class="layout-topbar-menu" :class="topbarMenuClasses">
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-calendar"></i>
-                <span>Calendar</span>
-            </button>
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
-                <i class="pi pi-user"></i>
-                <span>Profile</span>
-            </button>
-            <button @click="onSettingsClick()" class="p-link layout-topbar-button">
-                <i class="pi pi-cog"></i>
-                <span>Settings</span>
-            </button>
+        <div class="link-container">
+        <router-link to="/Acceuil" class="link">Acceuil</router-link>  
+        <router-link to="/QuiSommeNous" class="link">Qui Somme Nous</router-link>
+        <router-link to="/Produits" class="link">Produits</router-link>
+
         </div>
     </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+@font-face {
+    font-family: 'Tangerine';
+    src: url('../../public/fonts/Tangerine-Bold.ttf') format('truetype');
+}
+
+.text-tangerine {
+    font-family: 'Tangerine', sans-serif;
+}
+.textformat {
+    font-size: 4rem;
+}
+.imagew {
+    width: 110px;
+    height: 110px;
+    margin-right: 10px; 
+    margin-top: 10px;
+}
+.link-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.link {
+    margin-right: 20px;
+}
+</style>

@@ -14,9 +14,19 @@ const router = createRouter({
                     component: () => import('@/views/Dashboard.vue')
                 },
                 {
-                    path: '/home',
-                    name: 'home',
-                    component: () => import('@/views/Main/Home.vue')
+                    path: '/Produits',
+                    name: 'Produits',
+                    component: () => import('@/views/Main/Produits.vue')
+                },
+                {
+                    path: '/QuiSommeNous',
+                    name: 'QuiSommeNous',
+                    component: () => import('@/views/Main/QuiSommeNous.vue')
+                },
+                {
+                    path: '/Acceuil',
+                    name: 'Acceuil',
+                    component: () => import('@/views/Main/Landing.vue')
                 },
                 {
                     path: '/uikit/formlayout',
