@@ -1,13 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { ProductService } from '@/service/ProductService';
 import { initializeApp } from 'firebase/app';
 import { getStorage, listAll, ref as firebaseRef, getDownloadURL } from 'firebase/storage';
 
 const dataviewValue = ref(null);
 const layout = ref('grid');
 
-const productService = new ProductService();
 const AllProductslist = ref([]);
 const list = ref([]);
 const ImagesList = ref([]);
@@ -88,7 +86,6 @@ function getCategories() {
     categories.value.push('Tout');
     for (let i = 0; i < AllProductslist.value.length; i++) {
         if (!categories.value.includes(AllProductslist.value[i].category)) {
-            console.log(AllProductslist.value[i].category);
             categories.value.push(AllProductslist.value[i].category);
         }
     }
@@ -134,7 +131,7 @@ const open = () => {
     copied.value = false;
     confirmed.value = false;
     name.value =('');
-    number = ('');
+    number.value = ('');
 };
 
 async function copyToClipboard() {
@@ -193,11 +190,11 @@ function AjouterCommande(){
 
                     <template #grid="slotProps">
                         <div class="flex">
-                            <div class="grid grid-nogutter">
-                                <div v-for="(item, index) in slotProps.items" :key="index" class="col-12 sm:col-6 md:col-4 p-2">
+                            <div class="grid grid-nogutter gridSize">
+                                <div v-for="(item, index) in slotProps.items" :key="index" class="p-5">
                                     <div class="p-4 border-1 surface-border surface-card border-round flex flex-column">
                                         <div class="surface-50 flex justify-content-center border-round p-3">
-                                            <div class="relative mx-auto">
+                                            <div >
                                                 <img class="border-round w-full" :src="ImagesList[item.id - 1]" :alt="item.name" style="max-width: 300px" />
                                                 <Tag :value="item.inventoryStatus" class="absolute" style="left: 4px; top: 4px"></Tag>
                                             </div>
@@ -221,7 +218,7 @@ function AjouterCommande(){
                                             <div class="flex flex-column gap-4 mt-4">
                                                 <span class="text-2xl font-semibold text-900">${{ item.price }}</span>
                                                 <div class="flex gap-2">
-                                                    <Button icon="pi pi-shopping-cart" label="Buy Now" :disabled="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto white-space-nowrap" @click="addToCart(item)"></Button>
+                                                    <Button icon="pi pi-shopping-cart" label="Ajouter au panier" :disabled="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto white-space-nowrap" @click="addToCart(item)"></Button>
                                                     <Button icon="pi pi-heart" outlined></Button>
                                                 </div>
                                             </div>
@@ -237,7 +234,7 @@ function AjouterCommande(){
                                     <Button label="Commander" icon="pi pi-external-link" style="width: auto" @click="open" />
                                 </div>
 
-                                <div v-for="(item, index) in cart" :key="index" class="col-12">
+                                <div v-for="(item, index) in cart" :key="index" class="col-15">
                                     <div class="flex flex-column sm:flex-row sm:align-items-center p-2 gap-1" :class="{ 'border-top-1 surface-border': index !== 0 }">
                                         <div class="md:w-8rem relative">
                                             <img class="block xl:block mx-auto border-round w-full" :src="ImagesList[item.id - 1]" :alt="item.name" />
@@ -282,7 +279,7 @@ function AjouterCommande(){
         <div>
             <h3>Par un formulaire</h3>
             <br />
-            <div class="flex">
+            <div class="flex flex-wrap">
                 <FloatLabel>
                     <InputText id="Identity" type="text" v-model="name"/>
                     <label for="Identity">Nom et prenom </label>
@@ -310,4 +307,6 @@ function AjouterCommande(){
     border: 1px solid rgb(180, 180, 180);
     width: 100%;
 }
+
+
 </style>
