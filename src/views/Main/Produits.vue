@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { initializeApp } from 'firebase/app';
-import { getStorage, listAll, ref as firebaseRef, getDownloadURL } from 'firebase/storage';
+
 
 const layout = ref('grid');
 
@@ -18,15 +17,17 @@ function getAllProds() {
                     id: doc.fields.id.integerValue,
                     name: doc.fields.name.stringValue,
                     category: doc.fields.category.stringValue,
-                    rating: doc.fields.rating.integerValue || doc.fields.rating.stringValue,
                     price: doc.fields.price.integerValue,
-                    link: doc.fields.link.stringValue
+                    link: doc.fields.link.stringValue,
+                    isAvailable: doc.fields.isAvailable.booleanValue
                 };
             });
             list.value = AllProductslist.value;
         })
         .then(() => {
             getCategories();
+            applyFilters();
+
         });
 }
 onMounted(() => {
@@ -67,12 +68,19 @@ function getCategories() {
         }
     }
 }
-function filterByCategory() {
-    if (selectedCategory.value === 'Tout') {
-        list.value = AllProductslist.value;
-    } else {
-        list.value = AllProductslist.value.filter((product) => product.category === selectedCategory.value);
+const switchValue = ref(false);
+
+ function applyFilters() {
+    let filteredList = AllProductslist.value;
+    if (switchValue.value) {
+        filteredList = filteredList.filter((product) => product.isAvailable === true);
     }
+
+    if (selectedCategory.value !== 'Tout') {
+        filteredList = filteredList.filter((product) => product.category === selectedCategory.value);
+    }
+
+    list.value = filteredList;
 }
 
 /*********************** FILTER BY PRICE ******************************* */
@@ -81,8 +89,8 @@ const sortKey = ref(null);
 const sortOrder = ref(null);
 const sortField = ref(null);
 const sortOptions = ref([
-    { label: 'Price High to Low', value: '!price' },
-    { label: 'Price Low to High', value: 'price' }
+    { label: 'du prix le plus élevé au prix le plus bas', value: '!price' },
+    { label: 'du prix le plus bas au prix le plus élevé', value: 'price' }
 ]);
 
 const onSortChange = (event) => {
@@ -103,6 +111,8 @@ const onSortChange = (event) => {
 /*********************************COMMANDER *********************/
 const display = ref(false);
 const copied = ref(false);
+const isMobile = ref(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+
 const open = () => {
     display.value = true;
     copied.value = false;
@@ -159,7 +169,12 @@ function AjouterCommande() {
                         <div class="grid grid-nogutter">
                             <div class="col-6 text-left">
                                 <Dropdown class="drop" v-model="sortKey" :options="sortOptions" optionLabel="label" placeholder="Filtrer par le prix" @change="onSortChange($event)" />
-                                <Dropdown class="drop" v-model="selectedCategory" :options="categories" @change="filterByCategory()" />
+                                <Dropdown class="drop" v-model="selectedCategory" :options="categories" @change="applyFilters()" />
+                                <br>
+                                <br>
+                                <label>Masquer les produits indisponible</label>
+                                <InputSwitch v-model="switchValue" @change="applyFilters()" />
+
                             </div>
                         </div>
                     </template>
@@ -186,16 +201,15 @@ function AjouterCommande() {
                                                         class="surface-0 flex align-items-center gap-2 justify-content-center py-1 px-2"
                                                         style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
                                                     >
-                                                        <span class="text-900 font-medium text-sm">{{ item.rating }}</span>
-                                                        <i class="pi pi-star-fill text-yellow-500"></i>
+                                                     <Tag v-if="item.isAvailable" value="Disponible" severity="success" />
+                                                     <Tag v-else value="Non Disponible" severity="danger" />
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="flex flex-column gap-4 mt-4">
                                                 <span class="text-2xl font-semibold text-900">{{ item.price }} TND</span>
                                                 <div class="flex gap-2">
-                                                    <Button icon="pi pi-shopping-cart" label="Ajouter au panier" :disabled="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto white-space-nowrap mycolor" @click="addToCart(item)"></Button>
-                                                    <Button icon="pi pi-heart" outlined></Button>
+                                                    <Button  icon="pi pi-shopping-cart" label="Ajouter au panier" :disabled="item.isAvailable == false" class="flex-auto white-space-nowrap mycolor" @click="addToCart(item)"></Button>
                                                 </div>
                                             </div>
                                         </div>
@@ -205,24 +219,26 @@ function AjouterCommande() {
 
                             <!------------------------------------------------SECODND GRID-->
                             <div class="cart" v-if="fullPrice > 0">
-                                    <p class="text-4xl">  Total: <span class="mainColor">{{ fullPrice }} </span> DT <button class="btn" @click="open" >Valider</button> </p> 
-                                    
-                                    <div v-for="(item, index) in cart" :key="index">
-                                        <div class="flex flex-column sm:flex-row sm:align-items-center p-2 gap-1" :class="{ 'border-top-1 surface-border': index !== 0 }">
-                                            <div class="md:w-8rem relative">
-                                                <img class="block xl:block mx-auto border-round w-full" :src="item.link" :alt="item.name" />
-                                                <Tag :value="item.inventoryStatus" class="absolute" style="left: 4px; top: 4px"></Tag>
-                                            </div>
-                                            <div class="flex flex-column md:flex-row justify-content-between md:align-items-center flex-1 gap-2">
-                                                <div class="flex flex-row md:flex-column justify-content-between align-items-start gap-1"></div>
-                                                <div>
-                                                    <div class="text-xl font-semibold text-900">{{ item.price }} TND</div>
-                                                    <div class="text-lg font-medium text-900 mt-1">{{ item.name }}</div>
-                                                    <icon  class="pi pi-trash text-red-500  cursor-pointer" @click="RemoveFromCart(item)"></icon>
-                                                </div>
+                                <p class="text-4xl">
+                                    Total: <span class="mainColor">{{ fullPrice }} </span> DT <Button class="btn mycolor" @click="open">Valider</Button>
+                                </p>
+
+                                <div v-for="(item, index) in cart" :key="index">
+                                    <div class="flex flex-column sm:flex-row sm:align-items-center p-2 gap-1" :class="{ 'border-top-1 surface-border': index !== 0 }">
+                                        <div class="md:w-8rem relative">
+                                            <img class="block xl:block mx-auto border-round w-full" :src="item.link" :alt="item.name" />
+                                            <Tag :value="item.inventoryStatus" class="absolute" style="left: 4px; top: 4px"></Tag>
+                                        </div>
+                                        <div class="flex flex-column md:flex-row justify-content-between md:align-items-center flex-1 gap-2">
+                                            <div class="flex flex-row md:flex-column justify-content-between align-items-start gap-1"></div>
+                                            <div>
+                                                <div class="text-xl font-semibold text-900">{{ item.price }} TND</div>
+                                                <div class="text-lg font-medium text-900 mt-1">{{ item.name }}</div>
+                                                <icon class="pi pi-trash text-red-500 cursor-pointer" @click="RemoveFromCart(item)"></icon>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -230,19 +246,22 @@ function AjouterCommande() {
             </div>
         </div>
     </div>
-
     <Dialog header="Confirmer" v-model:visible="display" :breakpoints="{ '960px': '75vw' }" :style="{ width: '30vw' }" :modal="true">
         <div>
             <h3>Par instagram</h3>
             <p>Veuillez cliquer pour copier. Le lien la discussion s'affichera ensuite</p>
             <div class="border-1 border-gray-400 p-4 cursor-pointer hover:bg-gray-100" @click="copyToClipboard()" @mouseleave="onMouseLeave" @mouseover="onMouseOver" @mousemove="onMouseMove">
                 <div v-for="item in cart" :key="item.id">
-                    <p>{{ item.id }} - {{ item.name }}</p>
+                    <p>id<{{ item.id }}> - {{ item.name }}</p>
                 </div>
                 <div class="fixed bg-black text-white font-normal rounded p-3 myclass" v-if="hover" :style="{ top: `${position.y}px`, left: `${position.x}px` }">Copier</div>
             </div>
             <br />
-            <div v-if="copied">La commande a été copiée. Veuillez l'envoyer <a class="text-purple-500 font-bold underline" href="https://www.instagram.com/direct/t/17845195875045937/">ici</a></div>
+            <div v-if="copied">
+                La commande a été copiée. Veuillez l'envoyer
+                <a v-if="isMobile" class="text-purple-500 font-bold underline" href="instagram://user?username=ms__elegance__">ici</a>
+                <a v-else class="text-purple-500 font-bold underline" href="https://www.instagram.com/direct/t/17845195875045937/">ici</a>
+            </div>
         </div>
         <br />
         <div class="separator"></div>
@@ -292,38 +311,31 @@ function AjouterCommande() {
     width: 100%;
     max-width: 250px;
     min-width: 100px;
-    outline: red 1px solid;
+    border-radius: 20px;
+    outline: rgb(211, 211, 211) 1px solid;
     justify-content: center;
     align-items: center;
     display: block;
     text-align: center;
-
-
 }
-.btn{
+.btn {
     height: 100%;
     width: 80%;
     text-align: center;
-    background-color: #E3CECF;
-    }
+}
 
 .mycolor {
-    background-color: #C09495;
+    background-color: #c09495;
     color: rgb(255, 255, 255);
-    outline: #C09495 1px solid;
-    border: #C09495;
+    outline: #c09495 1px solid;
+    border: #c09495;
 }
-.mainColor{
-    color: #C09495;
-
+.mainColor {
+    color: #c09495;
 }
-.drop{
-    
+.drop {
 }
-.drop:hover{
-    outline: #C09495 1px solid;
-
+.drop:hover {
+    outline: #c09495 1px solid;
 }
-
 </style>
-
