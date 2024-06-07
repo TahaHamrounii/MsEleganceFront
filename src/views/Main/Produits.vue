@@ -11,11 +11,19 @@ const list = ref([]);
 const ImagesList = ref([]);
 
 function getAllProds() {
-    fetch('http://localhost:3000/Products')
+    fetch('https://firestore.googleapis.com/v1/projects/mselegance-13f07/databases/(default)/documents/Produits')
         .then((response) => response.json())
         .then((data) => {
-            AllProductslist.value = data;
-            list.value = AllProductslist.value;
+            console.log(data);
+            AllProductslist.value = data.documents.map(doc => {
+                return {
+                    id: doc.fields.id.integerValue,
+                    name: doc.fields.name.stringValue,
+                    category: doc.fields.category.stringValue,
+                    rating: doc.fields.rating.integerValue || doc.fields.rating.stringValue, 
+                    price: doc.fields.price.stringValue
+                };
+            });            list.value = AllProductslist.value;
         })
         .then(() => {
             getCategories();
