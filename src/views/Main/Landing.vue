@@ -1,13 +1,11 @@
 <template>
     <div
         id="hero"
-        class="flex flex-column pt-4 px-4 lg:px-8 overflow-hidden"
-        style="background: linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), radial-gradient(77.36% 256.97% at 77.36% 57.52%, #e8d6d7 0%, #b0797a 100%); clip-path: ellipse(150% 87% at 93% 13%)"
-    >
+        class="flex flex-column pt-4 px-4 lg:px-8 overflow-hidden lin">
         <div class="mx-4 md:mx-8 mt-0 md:mt-4">
             <h1 class="text-6xl font-bold text-gray-900 line-height-2"><span class="font-light block">Bienvenue chez</span>MsElegance</h1>
             <p class="font-normal text-2xl line-height-3 md:mt-3 text-gray-700">ou vous trouverez les meilleurs bijoux</p>
-            <Button @click="pushProd" label="Voir les Produits" class="p-button-rounded text-xl border-none bg-blue-500 font-normal text-white line-height-3 px-3"></Button>
+            <Button @click="pushProd" label="Voir les Produits" id="btn" class="p-button-rounded text-xl border-none mycolor font-normal text-white line-height-3 px-3"></Button>
             <br />
             <br />
         </div>
@@ -54,5 +52,18 @@ function pushProd() {
         transform: translateY(0);
         opacity: 1;
     }
+}
+.mycolor {
+    background-color: #C09495;
+    color: rgb(255, 255, 255);
+    outline: #C09495 1px solid;
+    outline: rgb(197, 197, 197) 1px solid;
+}
+#btn:hover {
+    background-color: #c09f9f;
+    
+}
+.lin{
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), radial-gradient(77.36% 256.97% at 77.36% 57.52%, #c2b4b4 0%, #e7d1d2  100%); clip-path: ellipse(150% 87% at 93% 13%)
 }
 </style>

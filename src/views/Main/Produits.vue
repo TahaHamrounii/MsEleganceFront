@@ -3,27 +3,27 @@ import { ref, onMounted } from 'vue';
 import { initializeApp } from 'firebase/app';
 import { getStorage, listAll, ref as firebaseRef, getDownloadURL } from 'firebase/storage';
 
-const dataviewValue = ref(null);
 const layout = ref('grid');
 
 const AllProductslist = ref([]);
 const list = ref([]);
-const ImagesList = ref([]);
 
 function getAllProds() {
     fetch('https://firestore.googleapis.com/v1/projects/mselegance-13f07/databases/(default)/documents/Produits')
         .then((response) => response.json())
         .then((data) => {
             console.log(data);
-            AllProductslist.value = data.documents.map(doc => {
+            AllProductslist.value = data.documents.map((doc) => {
                 return {
                     id: doc.fields.id.integerValue,
                     name: doc.fields.name.stringValue,
                     category: doc.fields.category.stringValue,
-                    rating: doc.fields.rating.integerValue || doc.fields.rating.stringValue, 
-                    price: doc.fields.price.stringValue
+                    rating: doc.fields.rating.integerValue || doc.fields.rating.stringValue,
+                    price: doc.fields.price.integerValue,
+                    link: doc.fields.link.stringValue
                 };
-            });            list.value = AllProductslist.value;
+            });
+            list.value = AllProductslist.value;
         })
         .then(() => {
             getCategories();
@@ -31,38 +31,7 @@ function getAllProds() {
 }
 onMounted(() => {
     getAllProds();
-    listAllImages();
 });
-
-/********************************************************************FIREBASE */
-const firebaseConfig = {
-    apiKey: 'AIzaSyD1_GuX3Wl6h34zkWXIts9VifH8mQWzRVE',
-    authDomain: 'mselegance-13f07.firebaseapp.com',
-    projectId: 'mselegance-13f07',
-    storageBucket: 'mselegance-13f07.appspot.com',
-    messagingSenderId: '741003400802',
-    appId: '1:741003400802:web:4cef5ad7b32da81a8f233b'
-};
-const firebaseApp = initializeApp(firebaseConfig);
-const storage = getStorage(firebaseApp, 'gs://mselegance-13f07.appspot.com');
-const storageRef = firebaseRef(storage);
-
-async function listAllImages() {
-    try {
-        const res = await listAll(storageRef);
-        const imageFiles = res.items.filter((item) => item.name.includes('.png'));
-        const imageUrls = [];
-
-        for (let file of imageFiles) {
-            let url = await getDownloadURL(file);
-            imageUrls.push(url);
-        }
-
-        ImagesList.value = imageUrls;
-    } catch (error) {
-        console.error('Error listing images:', error);
-    }
-}
 /*******************************************************************CART ***********************/
 
 const cart = ref([]);
@@ -82,7 +51,7 @@ const fullPrice = ref(0);
 function updateValues() {
     let sum = 0;
     for (let i = 0; i < cart.value.length; i++) {
-        sum += cart.value[i].price;
+        sum += parseInt(cart.value[i].price);
     }
     fullPrice.value = sum;
 }
@@ -138,8 +107,8 @@ const open = () => {
     display.value = true;
     copied.value = false;
     confirmed.value = false;
-    name.value =('');
-    number.value = ('');
+    name.value = '';
+    number.value = '';
 };
 
 async function copyToClipboard() {
@@ -160,12 +129,12 @@ function onMouseMove(event) {
     position.value = { x: event.clientX - 660, y: event.clientY - 300 };
 }
 
-const name =ref('');
+const name = ref('');
 const number = ref('');
 const confirmed = ref(false);
-function AjouterCommande(){
-    fetch('http://localhost:3000/Commandes', {
-        method: 'POST',
+function AjouterCommande() {
+    fetch('https://firestore.googleapis.com/v1/projects/mselegance-13f07/databases/(default)/documents/Commandes', {
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -175,9 +144,8 @@ function AjouterCommande(){
             products: cart.value
         })
     })
-    .then(response => response.json())
-    .then(confirmed.value = true)
-
+        .then((response) => response.json())
+        .then((confirmed.value = true));
 }
 </script>
 
@@ -190,20 +158,20 @@ function AjouterCommande(){
                     <template #header>
                         <div class="grid grid-nogutter">
                             <div class="col-6 text-left">
-                                <Dropdown v-model="sortKey" :options="sortOptions" optionLabel="label" placeholder="Filtrer par le prix" @change="onSortChange($event)" />
-                                <Dropdown v-model="selectedCategory" :options="categories" @change="filterByCategory()" />
+                                <Dropdown class="drop" v-model="sortKey" :options="sortOptions" optionLabel="label" placeholder="Filtrer par le prix" @change="onSortChange($event)" />
+                                <Dropdown class="drop" v-model="selectedCategory" :options="categories" @change="filterByCategory()" />
                             </div>
                         </div>
                     </template>
 
                     <template #grid="slotProps">
                         <div class="flex">
-                            <div class="grid grid-nogutter gridSize">
+                            <div class="grid grid-nogutter gridSize mygrid">
                                 <div v-for="(item, index) in slotProps.items" :key="index" class="p-5">
                                     <div class="p-4 border-1 surface-border surface-card border-round flex flex-column">
                                         <div class="surface-50 flex justify-content-center border-round p-3">
-                                            <div >
-                                                <img class="border-round w-full" :src="ImagesList[item.id - 1]" :alt="item.name" style="max-width: 300px" />
+                                            <div>
+                                                <img class="border-round imgS" :src="item.link" :alt="item.name" />
                                                 <Tag :value="item.inventoryStatus" class="absolute" style="left: 4px; top: 4px"></Tag>
                                             </div>
                                         </div>
@@ -224,9 +192,9 @@ function AjouterCommande(){
                                                 </div>
                                             </div>
                                             <div class="flex flex-column gap-4 mt-4">
-                                                <span class="text-2xl font-semibold text-900">${{ item.price }}</span>
+                                                <span class="text-2xl font-semibold text-900">{{ item.price }} TND</span>
                                                 <div class="flex gap-2">
-                                                    <Button icon="pi pi-shopping-cart" label="Ajouter au panier" :disabled="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto white-space-nowrap" @click="addToCart(item)"></Button>
+                                                    <Button icon="pi pi-shopping-cart" label="Ajouter au panier" :disabled="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto white-space-nowrap mycolor" @click="addToCart(item)"></Button>
                                                     <Button icon="pi pi-heart" outlined></Button>
                                                 </div>
                                             </div>
@@ -236,30 +204,25 @@ function AjouterCommande(){
                             </div>
 
                             <!------------------------------------------------SECODND GRID-->
-                            <div class="col-50 sticky" >
-                                <div v-if="fullPrice > 0">
-                                    <h2>totale {{ fullPrice }} DT</h2>
-                                    <Button label="Commander" icon="pi pi-external-link" style="width: auto" @click="open" />
-                                </div>
-
-                                <div v-for="(item, index) in cart" :key="index" class="col-15">
-                                    <div class="flex flex-column sm:flex-row sm:align-items-center p-2 gap-1" :class="{ 'border-top-1 surface-border': index !== 0 }">
-                                        <div class="md:w-8rem relative">
-                                            <img class="block xl:block mx-auto border-round w-full" :src="ImagesList[item.id - 1]" :alt="item.name" />
-                                            <Tag :value="item.inventoryStatus" class="absolute" style="left: 4px; top: 4px"></Tag>
-                                        </div>
-                                        <div class="flex flex-column md:flex-row justify-content-between md:align-items-center flex-1 gap-2">
-                                            <div class="flex flex-row md:flex-column justify-content-between align-items-start gap-1"></div>
-                                            <div>
-                                                <div class="text-xl font-semibold text-900">${{ item.price }}</div>
-                                                <div class="text-lg font-medium text-900 mt-1">{{ item.name }}</div>
-                                                <icon class="pi pi-trash color-red cursor-pointer" @click="RemoveFromCart(item)"></icon>
+                            <div class="cart" v-if="fullPrice > 0">
+                                    <p class="text-4xl">  Total: <span class="mainColor">{{ fullPrice }} </span> DT <button class="btn" @click="open" >Valider</button> </p> 
+                                    
+                                    <div v-for="(item, index) in cart" :key="index">
+                                        <div class="flex flex-column sm:flex-row sm:align-items-center p-2 gap-1" :class="{ 'border-top-1 surface-border': index !== 0 }">
+                                            <div class="md:w-8rem relative">
+                                                <img class="block xl:block mx-auto border-round w-full" :src="item.link" :alt="item.name" />
+                                                <Tag :value="item.inventoryStatus" class="absolute" style="left: 4px; top: 4px"></Tag>
+                                            </div>
+                                            <div class="flex flex-column md:flex-row justify-content-between md:align-items-center flex-1 gap-2">
+                                                <div class="flex flex-row md:flex-column justify-content-between align-items-start gap-1"></div>
+                                                <div>
+                                                    <div class="text-xl font-semibold text-900">{{ item.price }} TND</div>
+                                                    <div class="text-lg font-medium text-900 mt-1">{{ item.name }}</div>
+                                                    <icon  class="pi pi-trash text-red-500  cursor-pointer" @click="RemoveFromCart(item)"></icon>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div></div>
-                                </div>
                             </div>
                         </div>
                     </template>
@@ -289,7 +252,7 @@ function AjouterCommande(){
             <br />
             <div class="flex flex-wrap">
                 <FloatLabel>
-                    <InputText id="Identity" type="text" v-model="name"/>
+                    <InputText id="Identity" type="text" v-model="name" />
                     <label for="Identity">Nom et prenom </label>
                 </FloatLabel>
 
@@ -299,13 +262,13 @@ function AjouterCommande(){
                 </FloatLabel>
             </div>
             <br />
-            <Button v-if="!confirmed" label="Confimer" icon="pi pi-check" class="p-button-outlined" @click="AjouterCommande()"></Button>
+            <Button v-if="!confirmed" label="Confimer" icon="pi pi-check" class="p-button-outlined mycolor" @click="AjouterCommande()"></Button>
             <div v-if="confirmed" class="text-green-500 font-bold">Merci ! Votre commande a été ajoutée avec succès</div>
         </div>
     </Dialog>
 </template>
 
-<style>
+<style scoped>
 .myclass {
     background-color: black;
     border-radius: 5px;
@@ -316,5 +279,51 @@ function AjouterCommande(){
     width: 100%;
 }
 
+.imgS {
+    width: 100%;
+    max-width: 300px;
+    height: 100%;
+    max-height: 300px;
+}
+.mygrid {
+    justify-content: center;
+}
+.cart {
+    width: 100%;
+    max-width: 250px;
+    min-width: 100px;
+    outline: red 1px solid;
+    justify-content: center;
+    align-items: center;
+    display: block;
+    text-align: center;
+
+
+}
+.btn{
+    height: 100%;
+    width: 80%;
+    text-align: center;
+    background-color: #E3CECF;
+    }
+
+.mycolor {
+    background-color: #C09495;
+    color: rgb(255, 255, 255);
+    outline: #C09495 1px solid;
+    border: #C09495;
+}
+.mainColor{
+    color: #C09495;
+
+}
+.drop{
+    
+}
+.drop:hover{
+    outline: #C09495 1px solid;
+
+}
 
 </style>
+
