@@ -7,18 +7,18 @@
         <div class="mx-4 md:mx-8 mt-0 md:mt-4">
             <h1 class="text-6xl font-bold text-gray-900 line-height-2"><span class="font-light block">Bienvenue chez</span>MsElegance</h1>
             <p class="font-normal text-2xl line-height-3 md:mt-3 text-gray-700">ou vous trouverez les meilleurs bijoux</p>
-            <Button @click="pushProd"  label="Voir les Produits" class="p-button-rounded text-xl border-none  bg-blue-500 font-normal text-white line-height-3 px-3"></Button>
-            <br>            <br>
-            
-
+            <Button @click="pushProd" label="Voir les Produits" class="p-button-rounded text-xl border-none bg-blue-500 font-normal text-white line-height-3 px-3"></Button>
+            <br />
+            <br />
         </div>
         <div class="flex justify-content-center md:justify-content-end">
-            <img src="/demo/images/landing/f.png" alt="" class="thirty responsive"  />
+            <img src="/demo/images/landing/f.png" alt="" class="thirty responsive" />
             <img src="/demo/images/landing/f2.png" alt="" class="thirty responsive" />
-            <img src="/demo/images/landing/f3.png" alt="" class="thirty responsive" />        
+            <img src="/demo/images/landing/f3.png" alt="" class="thirty responsive" />
         </div>
     </div>
 
+    <div></div>
 </template>
 
 <script setup>
@@ -27,9 +27,7 @@ const router = useRouter();
 function pushProd() {
     router.push({ name: 'Produits' });
 }
-
 </script>
-
 
 <style scoped>
 .image {
@@ -47,7 +45,6 @@ function pushProd() {
     min-height: 80vh;
     position: relative;
 }
-
 
 @keyframes pop-up {
     0% {
