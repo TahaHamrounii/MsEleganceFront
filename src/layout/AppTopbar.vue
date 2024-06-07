@@ -1,21 +1,19 @@
 <script setup>
-import {computed} from 'vue';
+import { computed } from 'vue';
 const logoUrl = computed(() => {
     return `/demo/images/landing/logo.png`;
 });
 </script>
 
 <template>
-    <div class="layout-topbar h-16" >
+    <div class="layout-topbar h-16">
         <router-link to="/Acceuil">
-            <img :src="logoUrl" alt="logo" class="imagew"/>
+            <img :src="logoUrl" alt="logo" class="imagew" />
         </router-link>
 
-
         <div class="link-container">
-        <router-link to="/QuiSommeNous" class="link">Qui Somme Nous</router-link>
-        <router-link to="/Produits" class="link">Produits</router-link>
-
+            <router-link to="/QuiSommeNous" class="link">Qui Somme Nous</router-link>
+            <router-link to="/Produits" class="link">Produits</router-link>
         </div>
     </div>
 </template>
@@ -35,7 +33,7 @@ const logoUrl = computed(() => {
 .imagew {
     width: 110px;
     height: 110px;
-    margin-right: 10px; 
+    margin-right: 10px;
     margin-top: 10px;
 }
 .link-container {

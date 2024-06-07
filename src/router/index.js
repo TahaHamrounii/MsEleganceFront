@@ -20,7 +20,7 @@ const router = createRouter({
                 },
                 {
                     path: '/',
-                    name: 'Acceuil',
+                    name: 'AcceuilEmpty',
                     component: () => import('@/views/Main/Landing.vue')
                 },
                 {
